@@ -150,7 +150,8 @@ parentElement.addEventListener('click', clickHandler);
 var resultsParentElement = document.getElementById('results');
 
 
-
+//no longer needed because I added the chart
+/*
 function renderResults() {
   for( var i = 0; i<allProducts.length; i++){
     var totalVotes = document.createElement('p');
@@ -163,6 +164,7 @@ function renderResults() {
 
   }
 }
+*/
 
 var finalViews = []
 var finalVotes = []
