@@ -3,43 +3,71 @@
 var allProducts = []; //array that stores all the product images and attributes
 var parentElement = document.getElementById('photos');
 
+var timesUserCanVote = 25; //determines how many votes the user gets
+var timeUserHasVoted;
 
-//create a function to add all the product photos to the allProducts array
-function ProductImages(url,alt,title){
-  this.url=url;
-  this.alt=alt;
-  this.title=title;
-  this.votes=0;
-  this.views=0;
-  allProducts.push(this);
+function startup() {
+  var retreiveLocalStorage = localStorage.getItem('allProductsStored');
+
+  var storedUserVotes = localStorage.getItem('timesVoted');
+  if(storedUserVotes){
+    timeUserHasVoted = parseInt(storedUserVotes);
+  } else{
+    timeUserHasVoted = 0;
+  }
+
+  if(retreiveLocalStorage) {
+    //// will recreate the objects
+    var parseLocalStorage = JSON.parse(retreiveLocalStorage);
+
+
+    for( var i = 0; i<parseLocalStorage.length; i++){
+      var product = parseLocalStorage[i];
+      var url = product.url;
+      var alt = product.alt;
+      var title = product.title;
+      var views = product.views;
+      var votes = product.votes;
+      new ProductImages(url,alt,title,votes,views);
+    }
+  } else {
+    new ProductImages('/photos/bag.jpg','bag','bag');
+    new ProductImages('/photos/banana.jpg','banana','banana');
+    new ProductImages('/photos/bathroom.jpg','bathroom','bathroom');
+    new ProductImages('/photos/boots.jpg','boots','boots');
+    new ProductImages('/photos/breakfast.jpg','breakfast','breakfast');
+    new ProductImages('/photos/bubblegum.jpg','bubblegum','bubblegum');
+    new ProductImages('/photos/chair.jpg','chair','chair');
+    new ProductImages('/photos/cthulhu.jpg','cthulhu','cthulhu');
+    new ProductImages('/photos/dog-duck.jpg','dog-duck','dog-duck');
+    new ProductImages('/photos/dragon.jpg','dragon','dragon');
+    new ProductImages('/photos/pen.jpg','pen','pen');
+    new ProductImages('/photos/pet-sweep.jpg','pet-sweep','pet-sweep');
+    new ProductImages('/photos/scissors.jpg','scissors','scissors');
+    new ProductImages('/photos/shark.jpg','shark','shark');
+    new ProductImages('/photos/sweep.png','sweep','sweep');
+    new ProductImages('/photos/tauntaun.jpg','tauntaun','tauntaun');
+    new ProductImages('/photos/unicorn.jpg','unicorn','unicorn');
+    new ProductImages('/photos/usb.gif','usb','usb');
+    new ProductImages('/photos/water-can.jpg','water-can','water-can');
+    new ProductImages('/photos/wine-glass.jpg','wine-glass','wine-glass');
+  }
 
 }
 
-//create all object instances
-
-new ProductImages('/photos/bag.jpg','bag','bag');
-new ProductImages('/photos/banana.jpg','banana','banana');
-new ProductImages('/photos/bathroom.jpg','bathroom','bathroom');
-new ProductImages('/photos/boots.jpg','boots','boots');
-new ProductImages('/photos/breakfast.jpg','breakfast','breakfast');
-new ProductImages('/photos/bubblegum.jpg','bubblegum','bubblegum');
-new ProductImages('/photos/chair.jpg','chair','chair');
-new ProductImages('/photos/cthulhu.jpg','cthulhu','cthulhu');
-new ProductImages('/photos/dog-duck.jpg','dog-duck','dog-duck');
-new ProductImages('/photos/dragon.jpg','dragon','dragon');
-new ProductImages('/photos/pen.jpg','pen','pen');
-new ProductImages('/photos/pet-sweep.jpg','pet-sweep','pet-sweep');
-new ProductImages('/photos/scissors.jpg','scissors','scissors');
-new ProductImages('/photos/shark.jpg','shark','shark');
-new ProductImages('/photos/sweep.png','sweep','sweep');
-new ProductImages('/photos/tauntaun.jpg','tauntaun','tauntaun');
-new ProductImages('/photos/unicorn.jpg','unicorn','unicorn');
-new ProductImages('/photos/usb.gif','usb','usb');
-new ProductImages('/photos/water-can.jpg','water-can','water-can');
-new ProductImages('/photos/wine-glass.jpg','wine-glass','wine-glass');
+startup();
 
 
+//create a function to add all the product photos to the allProducts array
+function ProductImages(url,alt,title,votes=0,views=0){
+  this.url=url;
+  this.alt=alt;
+  this.title=title;
+  this.votes= votes;
+  this.views= views;
+  allProducts.push(this);
 
+}
 
 
 ProductImages.prototype.appendImage = function(){
@@ -113,8 +141,7 @@ allProducts[getUniqueIndex()].appendImage();
 
 //set up event listener
 
-var timesUserCanVote = 25; //determines how many votes the user gets
-var timeUserHasVoted = 0;
+
 
 function clickHandler(event) {
   //event handler
@@ -127,18 +154,24 @@ function clickHandler(event) {
     }
   }
   timeUserHasVoted++;
+  localStorage.setItem('timesVoted',timeUserHasVoted);
   if(timeUserHasVoted < timesUserCanVote){
     parentElement.textContent = '';
     allProducts[getUniqueIndex()].appendImage();
     allProducts[getUniqueIndex()].appendImage();
     allProducts[getUniqueIndex()].appendImage();
+    var stringifiedAllProducts = JSON.stringify(allProducts);
+    localStorage.setItem('allProductsStored',stringifiedAllProducts);
   } else {
     //call the render results function
     //remove the event listener
     parentElement.removeEventListener('click',clickHandler);
     getResults();
     generateChart();
-    renderResults(); //render results after all clicks have been used
+    localStorage.removeItem('timesVoted');
+    //adding the objects with this round's resutls to local storage
+
+
   }
 
 }
@@ -146,9 +179,6 @@ function clickHandler(event) {
 parentElement.addEventListener('click', clickHandler);
 
 //add results to page
-
-var resultsParentElement = document.getElementById('results');
-
 
 //no longer needed because I added the chart
 /*
@@ -166,9 +196,9 @@ function renderResults() {
 }
 */
 
-var finalViews = []
-var finalVotes = []
-var productNames = []
+var finalViews = [];
+var finalVotes = [];
+var productNames = [];
 
 function getResults() {
   for( var i = 0; i<allProducts.length; i++ ){
@@ -187,132 +217,132 @@ function randomNumber(min,max){
 function generateChart(){
   var ctx = document.getElementById('myChart').getContext('2d');
   var myChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-          labels: productNames,
-          datasets: [{
-              label: 'Votes',
-              data: finalVotes,
-              backgroundColor: [
-                  'rgba(255, 99, 132, 0.2)',
-                  'rgba(54, 162, 235, 0.2)',
-                  'rgba(255, 206, 86, 0.2)',
-                  'rgba(75, 192, 192, 0.2)',
-                  'rgba(153, 102, 255, 0.2)',
-                  'rgba(255, 159, 64, 0.2)',
-                  'rgba(255, 99, 132, 0.2)',
-                  'rgba(54, 162, 235, 0.2)',
-                  'rgba(255, 206, 86, 0.2)',
-                  'rgba(75, 192, 192, 0.2)',
-                  'rgba(153, 102, 255, 0.2)',
-                  'rgba(255, 159, 64, 0.2)',
-                  'rgba(255, 99, 132, 0.2)',
-                  'rgba(54, 162, 235, 0.2)',
-                  'rgba(255, 206, 86, 0.2)',
-                  'rgba(75, 192, 192, 0.2)',
-                  'rgba(153, 102, 255, 0.2)',
-                  'rgba(255, 159, 64, 0.2)','rgba(255, 99, 132, 0.2)',
-                  'rgba(54, 162, 235, 0.2)',
-                  'rgba(255, 206, 86, 0.2)',
-                  'rgba(75, 192, 192, 0.2)',
-                  'rgba(153, 102, 255, 0.2)',
-                  'rgba(255, 159, 64, 0.2)'
-              ],
-              borderColor: [
-                  'rgba(255, 99, 132, 1)',
-                  'rgba(54, 162, 235, 1)',
-                  'rgba(255, 206, 86, 1)',
-                  'rgba(75, 192, 192, 1)',
-                  'rgba(153, 102, 255, 1)',
-                  'rgba(255, 159, 64, 1)',
-                  'rgba(255, 99, 132, 1)',
-                  'rgba(54, 162, 235, 1)',
-                  'rgba(255, 206, 86, 1)',
-                  'rgba(75, 192, 192, 1)',
-                  'rgba(153, 102, 255, 1)',
-                  'rgba(255, 159, 64, 1)',
-                  'rgba(255, 99, 132, 1)',
-                  'rgba(54, 162, 235, 1)',
-                  'rgba(255, 206, 86, 1)',
-                  'rgba(75, 192, 192, 1)',
-                  'rgba(153, 102, 255, 1)',
-                  'rgba(255, 159, 64, 1)',
-                  'rgba(255, 99, 132, 1)',
-                  'rgba(54, 162, 235, 1)',
-                  'rgba(255, 206, 86, 1)',
-                  'rgba(75, 192, 192, 1)',
-                  'rgba(153, 102, 255, 1)',
-                  'rgba(255, 159, 64, 1)'
-              ],
-              borderWidth: 1
-          },
-          {
-            label: 'Views',
-            data: finalViews,
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)',
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)',
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)',
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)',
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)',
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)',
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        }]
+    type: 'bar',
+    data: {
+      labels: productNames,
+      datasets: [{
+        label: 'Votes',
+        data: finalVotes,
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)','rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1
       },
-      options: {
-          scales: {
-              yAxes: [{
-                  ticks: {
-                      beginAtZero: true
-                  }
-              }]
+      {
+        label: 'Views',
+        data: finalViews,
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true
           }
+        }]
       }
+    }
   });
 }
 
