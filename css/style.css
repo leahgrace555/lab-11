@@ -1,3 +1,38 @@
+header {
+  height: 3em;
+  background-image: url(/photos/meghan-schiereck-AElxeCV-W-g-unsplash.jpg);
+  background-position: center;
+  background-size: 100%;
+  font-family: 'Nunito', sans-serif;
+  color: white;
+  font-size: 100pt;
+  text-align: center;
+}
+
+h1 {
+  padding: 1em;
+  letter-spacing: .2em;
+  -webkit-text-stroke-width: 2px;
+  -webkit-text-stroke-color:#1B6D6A;
+}
+
+main section {
+  text-align: center;
+}
+
+main section p {
+  max-width: 50%;
+  margin: auto;
+  font-size: 16pt;
+  padding: 2em;
+  line-height: 2em;
+  font-family: 'Nunito', sans-serif;
+  color: rgb(56, 56, 56);
+  text-align: center;
+}
+
 #photos img {
   max-width: 300px;
+  padding: 30px
+  
 }
